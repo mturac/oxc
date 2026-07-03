@@ -188,7 +188,9 @@ export const NODE_TYPE_IDS_MAP = new Map([
   ["TSInstantiationExpression", 180],
   ["JSDocNullableType", 181],
   ["JSDocNonNullableType", 182],
+  ["Identifier", 183],
+  ["MemberExpression", 184],
 ]);
 
-export const NODE_TYPES_COUNT = 183;
+export const NODE_TYPES_COUNT = 185;
 export const LEAF_NODE_TYPES_COUNT = 40;
