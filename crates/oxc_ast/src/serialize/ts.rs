@@ -381,8 +381,11 @@ impl ESTree for TSClassImplementsExpression<'_, '_> {
 
 /// Serializer for `expression` field of `TSInterfaceHeritage`.
 ///
-/// Oxc stores interface heritage as a `TSTypeName`, but TS-ESTree exposes the field as an
-/// expression-shaped node.
+/// Our AST represents `X.Y` in `interface I extends X.Y {}` as a `TSQualifiedName`.
+/// TS-ESTree represents `X.Y` as a `MemberExpression`.
+///
+/// Where there are more parts e.g. `interface I extends X.Y.Z {}`, the `TSQualifiedName`s (Oxc)
+/// or `MemberExpression`s (TS-ESTree) are nested.
 #[ast_meta]
 #[estree(
     ts_type = "Expression",
