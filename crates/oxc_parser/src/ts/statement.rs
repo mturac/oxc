@@ -280,12 +280,12 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         }
         loop {
             let span = self.start_span();
-            let checkpoint = self.checkpoint();
             let (type_name, type_argument) = if self.at(Kind::This)
                 || self
                     .cur_kind()
                     .is_identifier_reference(self.ctx.has_yield(), self.ctx.has_await())
             {
+                let checkpoint = self.checkpoint();
                 let has_this = self.at(Kind::This);
                 let type_name = self.parse_ts_interface_heritage_type_name(span);
                 let type_argument = self.parse_type_arguments_of_type_reference();
