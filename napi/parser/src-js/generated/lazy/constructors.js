@@ -9,66 +9,6 @@ const textDecoder = new TextDecoder("utf-8", { ignoreBOM: true }),
   { fromCodePoint } = String,
   inspectSymbol = Symbol.for("nodejs.util.inspect.custom");
 
-const convertedIdentifiers = new WeakMap(),
-  convertedQualifiedNames = new WeakMap();
-
-function constructTSTypeNameAsMemberExpression(pos, ast) {
-  return convertTSTypeNameToMemberExpression(constructTSTypeName(pos, ast));
-}
-
-export function constructTSQualifiedNameAsMemberExpression(pos, ast) {
-  return convertTSTypeNameToMemberExpression(new TSQualifiedName(pos, ast));
-}
-
-export function constructIdentifierReferenceAsIdentifier(pos, ast) {
-  return convertIdentifierToIdentifier(new IdentifierReference(pos, ast));
-}
-
-export function constructIdentifierNameAsIdentifier(pos, ast) {
-  return convertIdentifierToIdentifier(new IdentifierName(pos, ast));
-}
-
-function convertIdentifierToIdentifier(identifier) {
-  let converted = convertedIdentifiers.get(identifier);
-  if (converted === void 0) {
-    converted = {
-      type: "Identifier",
-      name: identifier.name,
-      start: identifier.start,
-      end: identifier.end,
-    };
-    convertedIdentifiers.set(identifier, converted);
-  }
-  return converted;
-}
-
-function convertTSTypeNameToMemberExpression(expression) {
-  switch (expression.type) {
-    case "IdentifierReference":
-      return convertIdentifierToIdentifier(expression);
-    case "ThisExpression":
-      return expression;
-    case "TSQualifiedName": {
-      let converted = convertedQualifiedNames.get(expression);
-      if (converted === void 0) {
-        converted = {
-          type: "MemberExpression",
-          object: convertTSTypeNameToMemberExpression(expression.left),
-          property: convertIdentifierToIdentifier(expression.right),
-          optional: false,
-          computed: false,
-          start: expression.start,
-          end: expression.end,
-        };
-        convertedQualifiedNames.set(expression, converted);
-      }
-      return converted;
-    }
-    default:
-      throw new Error(`Unexpected TSTypeName type ${expression.type}`);
-  }
-}
-
 export class Program {
   type = "Program";
   #internal;
@@ -9919,7 +9859,7 @@ export class TSClassImplements {
     const cached = nodes.get(pos);
     if (cached !== void 0) return cached;
 
-    this.#internal = { pos, ast, $expression: void 0 };
+    this.#internal = { pos, ast };
     nodes.set(pos, this);
   }
 
@@ -9934,13 +9874,8 @@ export class TSClassImplements {
   }
 
   get expression() {
-    const internal = this.#internal,
-      cached = internal.$expression;
-    if (cached !== void 0) return cached;
-    return (internal.$expression = constructTSTypeNameAsMemberExpression(
-      internal.pos + 16,
-      internal.ast,
-    ));
+    const internal = this.#internal;
+    return constructTSTypeName(internal.pos + 16, internal.ast);
   }
 
   get typeArguments() {
@@ -10512,7 +10447,7 @@ export class TSInterfaceHeritage {
     const cached = nodes.get(pos);
     if (cached !== void 0) return cached;
 
-    this.#internal = { pos, ast, $expression: void 0 };
+    this.#internal = { pos, ast };
     nodes.set(pos, this);
   }
 
@@ -10527,13 +10462,8 @@ export class TSInterfaceHeritage {
   }
 
   get expression() {
-    const internal = this.#internal,
-      cached = internal.$expression;
-    if (cached !== void 0) return cached;
-    return (internal.$expression = constructTSTypeNameAsMemberExpression(
-      internal.pos + 16,
-      internal.ast,
-    ));
+    const internal = this.#internal;
+    return constructTSTypeName(internal.pos + 16, internal.ast);
   }
 
   get typeArguments() {
