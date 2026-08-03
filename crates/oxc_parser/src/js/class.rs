@@ -133,51 +133,6 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         )
     }
 
-    #[expect(clippy::type_complexity)]
-    fn parse_class_heritage_clause(
-        &mut self,
-    ) -> (
-        Option<
-            ArenaVec<'a, (Expression<'a>, Option<ArenaBox<'a, TSTypeParameterInstantiation<'a>>>)>,
-        >,
-        Option<ImplementsWithKeywordSpan<'a>>,
-    ) {
-        self.parse_heritage_clause(Self::parse_class_extends_clause)
-    }
-
-    /// `ClassHeritage`
-    /// extends `LeftHandSideExpression`[?Yield, ?Await]
-    fn parse_class_extends_clause(
-        &mut self,
-    ) -> ArenaVec<'a, (Expression<'a>, Option<ArenaBox<'a, TSTypeParameterInstantiation<'a>>>)>
-    {
-        self.bump_any(); // bump `extends`
-
-        let mut extends = ArenaVec::with_capacity_in(1, self);
-        loop {
-            let mut extend = self.parse_lhs_expression_or_higher();
-            if self.fatal_error.is_some() {
-                break;
-            }
-            let type_argument;
-            if let Expression::TSInstantiationExpression(expr) = extend {
-                let expr = expr.unbox();
-                extend = expr.expression;
-                type_argument = Some(expr.type_arguments);
-            } else {
-                type_argument = self.try_parse_type_arguments();
-            }
-
-            extends.push((extend, type_argument));
-
-            if !self.eat(Kind::Comma) {
-                break;
-            }
-        }
-
-        extends
-    }
-
     pub(crate) fn parse_heritage_clause<T, F>(
         &mut self,
         mut parse_extends_clause: F,
@@ -229,6 +184,51 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         }
 
         (extends, implements)
+    }
+
+    #[expect(clippy::type_complexity)]
+    fn parse_class_heritage_clause(
+        &mut self,
+    ) -> (
+        Option<
+            ArenaVec<'a, (Expression<'a>, Option<ArenaBox<'a, TSTypeParameterInstantiation<'a>>>)>,
+        >,
+        Option<ImplementsWithKeywordSpan<'a>>,
+    ) {
+        self.parse_heritage_clause(Self::parse_class_extends_clause)
+    }
+
+    /// `ClassHeritage`
+    /// extends `LeftHandSideExpression`[?Yield, ?Await]
+    fn parse_class_extends_clause(
+        &mut self,
+    ) -> ArenaVec<'a, (Expression<'a>, Option<ArenaBox<'a, TSTypeParameterInstantiation<'a>>>)>
+    {
+        self.bump_any(); // bump `extends`
+
+        let mut extends = ArenaVec::with_capacity_in(1, self);
+        loop {
+            let mut extend = self.parse_lhs_expression_or_higher();
+            if self.fatal_error.is_some() {
+                break;
+            }
+            let type_argument;
+            if let Expression::TSInstantiationExpression(expr) = extend {
+                let expr = expr.unbox();
+                extend = expr.expression;
+                type_argument = Some(expr.type_arguments);
+            } else {
+                type_argument = self.try_parse_type_arguments();
+            }
+
+            extends.push((extend, type_argument));
+
+            if !self.eat(Kind::Comma) {
+                break;
+            }
+        }
+
+        extends
     }
 
     fn parse_class_body(&mut self) -> ArenaBox<'a, ClassBody<'a>> {
