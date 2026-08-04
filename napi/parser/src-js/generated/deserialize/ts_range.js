@@ -4591,19 +4591,20 @@ function deserializeTSTypePredicateName(pos) {
 function deserializeTSExternalModuleDeclaration(pos) {
   let start = deserializeI32(pos),
     end = deserializeI32(pos + 4),
+    declare = deserializeBool(pos + 72),
+    body = deserializeOptionBoxTSModuleBlock(pos + 64),
     node = {
       type: "TSModuleDeclaration",
       id: null,
+      ...(body !== null && { body }),
       kind: "module",
-      declare: deserializeBool(pos + 72),
+      declare,
       global: false,
       start,
       end,
       range: [start, end],
     };
   node.id = deserializeStringLiteral(pos + 16);
-  let body = deserializeOptionBoxTSModuleBlock(pos + 64);
-  body !== null && (node.body = body);
   return node;
 }
 

@@ -4578,9 +4578,11 @@ function deserializeTSExternalModuleDeclaration(pos) {
     end = deserializeI32(pos + 4),
     declare = deserializeBool(pos + 72),
     previousParent = parent,
+    body = deserializeOptionBoxTSModuleBlock(pos + 64),
     node = (parent = {
       type: "TSModuleDeclaration",
       id: null,
+      ...(body !== null && { body }),
       kind: "module",
       declare,
       global: false,
@@ -4589,11 +4591,7 @@ function deserializeTSExternalModuleDeclaration(pos) {
       parent,
     });
   node.id = deserializeStringLiteral(pos + 16);
-  let body = deserializeOptionBoxTSModuleBlock(pos + 64);
-  if (body !== null) {
-    node.body = body;
-    body.parent = node;
-  }
+  body !== null && (body.parent = node);
   parent = previousParent;
   return node;
 }
