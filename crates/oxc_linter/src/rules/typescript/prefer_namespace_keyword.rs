@@ -1,6 +1,6 @@
 use oxc_ast::{
     AstKind,
-    ast::{TSModuleDeclaration, TSModuleDeclarationKind, TSModuleDeclarationName},
+    ast::{TSNamespaceDeclaration, TSNamespaceDeclarationKind},
 };
 use oxc_diagnostics::OxcDiagnostic;
 use oxc_macros::declare_oxc_lint;
@@ -66,22 +66,21 @@ declare_oxc_lint!(
     short_description = "Require using `namespace` keyword over `module` keyword to declare custom TypeScript modules.",
 );
 
-fn is_valid_module(module: &TSModuleDeclaration) -> bool {
-    matches!(module.id, TSModuleDeclarationName::Identifier(_))
-        && module.kind == TSModuleDeclarationKind::Module
+fn is_valid_module(module: &TSNamespaceDeclaration) -> bool {
+    module.kind == TSNamespaceDeclarationKind::Module
 }
 
 impl Rule for PreferNamespaceKeyword {
     fn run<'a>(&self, node: &AstNode<'a>, ctx: &LintContext<'a>) {
-        let AstKind::TSModuleDeclaration(module) = node.kind() else { return };
+        let AstKind::TSNamespaceDeclaration(module) = node.kind() else { return };
 
         if !is_valid_module(module) {
             return;
         }
 
-        // Ignore nested `TSModuleDeclaration`s
-        // e.g. the 2 inner `TSModuleDeclaration`s in `module A.B.C {}`
-        if let AstKind::TSModuleDeclaration(_) = ctx.nodes().parent_kind(node.id()) {
+        // Ignore nested `TSNamespaceDeclaration`s
+        // e.g. the 2 inner declarations in `module A.B.C {}`
+        if let AstKind::TSNamespaceDeclaration(_) = ctx.nodes().parent_kind(node.id()) {
             return;
         }
 
