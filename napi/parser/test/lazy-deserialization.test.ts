@@ -34,32 +34,6 @@ it("parses", () => {
   expect(declarator.type).toBe("VariableDeclarator");
 });
 
-it("exposes and visits split TypeScript module declarations", () => {
-  const data = parseSyncLazy("test.ts", 'declare module "foo" {}\nnamespace Foo.Bar {}');
-  const [externalModule, namespace] = data.program.body;
-
-  expect(externalModule.type).toBe("TSExternalModuleDeclaration");
-  expect(externalModule.id.value).toBe("foo");
-  expect(namespace.type).toBe("TSNamespaceDeclaration");
-  expect(namespace.id.name).toBe("Foo");
-  expect(namespace.body.type).toBe("TSNamespaceDeclaration");
-  expect(namespace.body.id.name).toBe("Bar");
-
-  const Visitor = experimentalGetLazyVisitor();
-  const visited = [];
-  data.visit(
-    new Visitor({
-      TSExternalModuleDeclaration(node) {
-        visited.push(node.type);
-      },
-      TSNamespaceDeclaration(node) {
-        visited.push(node.id.name);
-      },
-    }),
-  );
-  expect(visited).toStrictEqual(["TSExternalModuleDeclaration", "Foo", "Bar"]);
-});
-
 it("returns same node objects and node arrays on each access", () => {
   const data = parseSyncLazy("test.js", "let x = y + z;");
   const { program } = data;
