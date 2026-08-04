@@ -66,15 +66,13 @@ declare_oxc_lint!(
     short_description = "Require using `namespace` keyword over `module` keyword to declare custom TypeScript modules.",
 );
 
-fn is_valid_module(module: &TSNamespaceDeclaration) -> bool {
-    module.kind == TSNamespaceDeclarationKind::Module
-}
+fn is_valid_module(module: &TSNamespaceDeclaration) -> bool {}
 
 impl Rule for PreferNamespaceKeyword {
     fn run<'a>(&self, node: &AstNode<'a>, ctx: &LintContext<'a>) {
         let AstKind::TSNamespaceDeclaration(module) = node.kind() else { return };
 
-        if !is_valid_module(module) {
+        if module.kind != TSNamespaceDeclarationKind::Module {
             return;
         }
 
