@@ -1,7 +1,4 @@
-use oxc_ast::{
-    AstKind,
-    ast::{TSNamespaceDeclaration, TSNamespaceDeclarationKind},
-};
+use oxc_ast::{AstKind, ast::TSNamespaceDeclarationKind};
 use oxc_diagnostics::OxcDiagnostic;
 use oxc_macros::declare_oxc_lint;
 use oxc_span::Span;
