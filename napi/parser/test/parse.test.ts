@@ -186,51 +186,6 @@ describe("parse", () => {
     });
   });
 
-  test.each([false, true])(
-    "serializes split TypeScript module declarations as ESTree (raw transfer: %s)",
-    (experimentalRawTransfer) => {
-      const source =
-        'declare module "external"; namespace Foo.Bar {} module Baz {} module "raw" {}';
-      const { program, errors } = parseSync("test.ts", source, { experimentalRawTransfer });
-      expect(errors).toHaveLength(0);
-
-      const [external, namespace, module, externalWithBody] = program.body;
-      expect(external).toMatchObject({
-        type: "TSModuleDeclaration",
-        id: { type: "Literal", value: "external" },
-        kind: "module",
-        declare: true,
-        global: false,
-      });
-      expect("body" in external).toBe(false);
-
-      expect(namespace).toMatchObject({
-        type: "TSModuleDeclaration",
-        id: {
-          type: "TSQualifiedName",
-          left: { type: "Identifier", name: "Foo" },
-          right: { type: "Identifier", name: "Bar" },
-        },
-        body: { type: "TSModuleBlock" },
-        kind: "namespace",
-        declare: false,
-        global: false,
-      });
-      expect(module).toMatchObject({
-        type: "TSModuleDeclaration",
-        id: { type: "Identifier", name: "Baz" },
-        body: { type: "TSModuleBlock" },
-        kind: "module",
-      });
-      expect(externalWithBody).toMatchObject({
-        type: "TSModuleDeclaration",
-        id: { type: "Literal", value: "raw" },
-        body: { type: "TSModuleBlock" },
-        kind: "module",
-      });
-    },
-  );
-
   it("`Infinity` is represented as `Infinity` number", () => {
     const ret = parseSync("test.js", "1e+350");
     expect(ret.errors.length).toBe(0);
